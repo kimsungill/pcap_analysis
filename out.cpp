@@ -3,17 +3,20 @@
 #include <stdint.h>
 #include <string.h>
 #include <netinet/ip.h>
-#include <arpa/inet.h>
+#include <stdlib.h>
 
 void home (const unsigned char *data){
     int ethlen = sizeof(ethheader);
     struct ethheader *ethprint = (struct ethheader *)data;
-    struct ipheader *ipprint = (struct ipheader *)(data+ethlen);
+    data = (data+ethlen);
+    struct ipheader *ipprint = (struct ipheader *)data;
     uint8_t iphlen = ((ipprint->ip_vlen) & 0x0F) * 4;
-    struct tcpheader *tcpprint = (struct tcpheader *)(data+ethlen+iphlen);
+    data = (data+iphlen);
+    struct tcpheader *tcpprint = (struct tcpheader *)data;
     uint8_t tcphlen = ((tcpprint->t_off) >> 4) * 4;
     uint16_t httplen = ntohs(ipprint->ip_tlen) - tcphlen - iphlen;
-    struct httpheader *httpprint = (struct httpheader *)(data+ethlen+iphlen+tcphlen);
+    data = (data+tcphlen);
+    struct httpheader *httpprint = (struct httpheader *)data;
 
     printf("------------------------------------ETHERNET Header");
     for(int i = 0; i < 12; i++){
@@ -75,8 +78,6 @@ void home (const unsigned char *data){
                 }
             }
         }
-
-        printf("------------------------------------\n");
     }
-
+    printf("\n");
 }
