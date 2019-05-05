@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
     if (res == -1 || res == -2) break;
     printf("\n%u bytes captured \n", header->caplen);
     home(packet);
+    }
   }
 
   pcap_close(handle);
