@@ -3,64 +3,80 @@
 #include <stdint.h>
 #include <string.h>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
 
-void home (const uint8_t *data){
+void home (const unsigned char *data){
     int ethlen = sizeof(ethheader);
     struct ethheader *ethprint = (struct ethheader *)data;
     struct ipheader *ipprint = (struct ipheader *)(data+ethlen);
-    uint8_t iphlen = ((ipprint->verlen) & 0x0F) * 4;
+    uint8_t iphlen = ((ipprint->ip_vlen) & 0x0F) * 4;
     struct tcpheader *tcpprint = (struct tcpheader *)(data+ethlen+iphlen);
-    uint8_t tcphlen = ((tcpprint->offset) >> 4) * 4;
-    uint16_t httplen = ntohs(ipprint->tlan) - tcphlen - iphlen;
+    uint8_t tcphlen = ((tcpprint->t_off) >> 4) * 4;
+    uint16_t httplen = ntohs(ipprint->ip_tlen) - tcphlen - iphlen;
     struct httpheader *httpprint = (struct httpheader *)(data+ethlen+iphlen+tcphlen);
 
-    printf("------------------------------\n");
-    printf("DMAC = ");
-    for(int i = 0; i < 6; i++){
-    printf("%02X",ethprint->mac[i]);
-    if(i < 5)
-        printf(":");
+    printf("------------------------------------ETHERNET Header");
+    for(int i = 0; i < 12; i++){
+        if(i < 6){
+            if (i == 0){
+                printf("\nDMAC = ");
+            }
+            printf("%02X",ethprint->e_mac[i]);
+            if(i < 5)
+                printf(":");
+        }
+
+        if(i > 5){
+            if(i == 6){
+                printf("\nSMAC = ");
+            }
+            printf("%02X",ethprint->e_mac[i]);
+            if(i < 11)
+                printf(":");
+        }
     }
 
-    printf("\nSMAC = ");
-    for(int i = 6; i < 12; i++){
-    printf("%02X",ethprint->mac[i]);
-    if(i < 11)
-        printf(":");
-    }
+    if (ntohs(ethprint->e_type) == 0x0800 ){
+        printf("\n------------------------------------IP Header");
+        for (int i = 0; i < 8; i++){
+            if(i < 4){
+                if(i == 0){
+                    printf("\nSIP = ");
+                }
+                printf("%u",ipprint->ip_add[i]);
+                if(i < 3)
+                    printf(".");
+            }
+            if(i > 3){
+                if(i == 4){
+                    printf("\nDIP = ");
+                }
+                printf("%u",ipprint->ip_add[i]);
+                if(i < 7)
+                    printf(".");
+            }
+        }
 
-    if (ntohs(ethprint->type) == 0x0800 ){
-    printf("\nSIP = ");
-    for (int i = 0; i < 4; i++){
-        printf("%u",ipprint->address[i]);
-        if(i < 3)
-            printf(".");
-    }
+        if (ipprint->ip_pro == 6){
+            printf("\n------------------------------------TCP Header");
+            printf("\nSPORT = %u",ntohs(tcpprint->t_port[0]));
+            printf("\nDPORT = %u",ntohs(tcpprint->t_port[1]));
 
-    printf("\nDIP = ");
-    for (int i = 4; i < 8; i++){
-        printf("%u",ipprint->address[i]);
-        if(i < 7)
-            printf(".");
-    }
+            printf("\n------------------------------------HTTP Header");
+            if (httplen > 16){
+                printf("\nHTTP DATA = ");
+                for(int z = 0; z < 16; z++){
+                    printf("%c",httpprint->h_data[z]);
+                }
+            } else {
+                printf("\nHTTP DATA = ");
+                for(int z = 0; z < httplen; z++){
+                    printf("%c",httpprint->h_data[z]);
+                }
+            }
+        }
 
-    if (ipprint->protocol == 6){
-    printf("\nSPORT = %u",ntohs(tcpprint->port[0]));
-    printf("\nDPORT = %u",ntohs(tcpprint->port[1]));
-
-    if (httplen > 16){
-    printf("\nHTTP DATA = ");
-    for(int z = 0; z < 16; z++){
-    printf("%c",httpprint->httpdata[z]);
+        printf("------------------------------------\n");
     }
-    } else {
-        printf("\nHTTP DATA ERROR!");
-    }
-    }
-
-    printf("------------------------------\n");
-    }
-
-    printf("\n");
 
 }

@@ -2,36 +2,37 @@
 #include <stdint.h>
 
 struct ethheader {
-    uint8_t mac[12];
-    uint16_t type;
+    uint8_t e_mac[12];
+    uint16_t e_type;
 };
 
 struct ipheader {
-    uint8_t verlen;
-    uint8_t typeofse;
-    uint16_t tlan;
-    uint16_t iden;
-    uint8_t flags;
-    uint8_t offset;
-    uint8_t TTL;
-    uint8_t protocol;
-    uint16_t check;
-    uint8_t address[8];
+    uint8_t ip_vlen;
+    uint8_t ip_tos;
+    uint16_t ip_tlen;
+    uint16_t ip_id;
+    uint8_t ip_flags;
+    uint8_t ip_off;
+    uint8_t ip_ttl;
+    uint8_t ip_pro;
+    uint16_t ip_check;
+    uint8_t ip_add[8];
+
 };
 
 struct tcpheader {
-    uint16_t port[2];
-    uint32_t sqnumber;
-    uint32_t acknumber;
-    uint8_t offset;
-    uint8_t flag;
-    uint16_t winsize;
-    uint16_t checksum;
-    uint16_t pointer;
+    uint16_t t_port[2];
+    uint32_t t_seq;
+    uint32_t t_ack;
+    uint8_t t_off;
+    uint8_t t_flags;
+    uint16_t t_win;
+    uint16_t t_csum;
+    uint16_t t_pt;
 };
 
 struct httpheader {
-    uint8_t httpdata[16];
+    uint8_t h_data[16];
 };
 
-void home(const uint8_t *data);
+void home(const unsigned char *data);
